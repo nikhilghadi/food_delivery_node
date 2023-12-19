@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const User = require('../models/User')
-const { body, validationResult } = require('express-validator');
+const { body,query, check,validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const JWT_SECRET =  "DSFSDGBBfdkvSDASDSWADEWAD"
@@ -70,5 +70,17 @@ router.post("/login", (req,res)=>{
   } catch (error) {
     res.json({success: false, message: err})
   }
+})
+
+router.get("/verify_token",(req,res)=>{
+  const authToken = req.headers.authorization;
+  jwt.verify(authToken.replace('YoYo ',''), JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ message: 'Invalid token' });
+    }
+    User.findById( decoded.user.id).then((user)=>{
+      res.json({success: true, authToken: authToken, email: user.email, name: user.name, location: user.location})
+    })
+  });
 })
 module.exports = router
